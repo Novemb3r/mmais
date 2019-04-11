@@ -2,7 +2,7 @@ from lab4.kalman import Kalman
 
 
 def main():
-    print(Kalman.F())
+    print(Kalman.F([5]))
 
 
 if __name__ == '__main__':
