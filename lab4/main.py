@@ -1,5 +1,8 @@
+from lab4.kalman import Kalman
+
+
 def main():
-    pass
+    print(Kalman.F())
 
 
 if __name__ == '__main__':
