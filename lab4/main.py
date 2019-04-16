@@ -33,6 +33,7 @@ def main():
                              Q=0.1,
                              m=1,
                              N=10,
+                             a=0,
                              )
     #
     # a2 = ExperimentConstants(P_t0=[[0.05, 0], [0, 0.05]],

@@ -9,6 +9,8 @@ class ExperimentConstants:
                  Q=None,
                  m=None,
                  N=None,
+                 a=None,
+                 s=None,
                  ):
         self.P_t0 = P_t0
         self.mu_x = mu_x
@@ -19,3 +21,6 @@ class ExperimentConstants:
         self.R = R
         self.m = m
         self.N = N
+        self.a = a
+        self.s = s
+        self.P_tk_tk = P_t0
