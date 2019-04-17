@@ -4,17 +4,24 @@ import numpy as np
 
 
 def imf_calc(const: ExperimentConstants, model: ExperimentModel):
+    M = 0
+
     for k in range(const.N):
         if k == 0:
-            x_A_tk1 = np.array([model.F + const.mu_x + const.a] +
-                               [model.F_grad(i) @ const.mu_x +
-                                model.F @ model.mu_x_grad(i) +
-                                model.a_grad(i) for i in range(const.s)]).T
+            x_A_tk1 = np.array([np.dot(model.F(const.theta_0), model.mu_x(const.theta_0)) + const.a] +
+                               [np.dot(model.F_grad(const.theta_0, i), model.mu_x(const.theta_0)) +
+                                np.dot(model.F(const.theta_0), model.mu_x_grad(const.theta_0, i))
+                                for i in range(const.s)]).T
             sigma_A_tk1 = np.zeros((const.s, const.s))
 
         else:
-            x_A_tk1 = F_A_tk @ x_mu_A_tk + a_A_tk
-            sigma_A_tk1 = F_A_tk @ sigma_A_tk1 @ F_A_tk.T + K_A_tk @ B_tk @ K_A_tk.T
+
+            Ksk = np.dot(F, K)
+
+
+
+            x_A_tk1 = np.dot(F_A_tk, x_mu_A_tk) + a_A_tk
+            sigma_A_tk1 = np.dot(np.dot(F_A_tk, sigma_A_tk1), F_A_tk.T) + np.dot(np.dot(K_A_tk, B_tk), K_A_tk.T)
 
             F_A_tk = np.hstack(([model.F] + [[np.zeros((const.s, const.s))] * const.s]) +
 
