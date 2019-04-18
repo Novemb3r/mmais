@@ -1,71 +1,17 @@
-import injector
-
-from lab4.generator import GeneratorFactory
-from lab4.ExperimentConstants import ExperimentConstants
-from lab4.model.ExperimentModel import ExperimentModel
-from lab4.solver.imf_calc import imf_calc
+from lab4.Experiment.Experiment import Experiment
+from lab4.Generator import GeneratorFactory
+from lab4.Injector import Injector
+from lab4.Solver.imf_calc import imf_calc
 
 
 def main():
+    ec, em = Experiment.get()
 
+    Injector.setParams(ec, em).configure()
 
-    ec = ExperimentModel(
-        Psi=lambda theta: theta[1],
-        A=lambda theta: 0,
-        H=lambda theta: 1,
-        mu_x=lambda theta: 0,
-        F=lambda theta: theta[0],
-        Gamma=lambda theta: 1,
-        P_tk_tk=lambda theta: 0.1,
+    # y = GeneratorFactory.get(1).generate()
 
-        Psi_grad=[
-            lambda theta: 0,
-            lambda theta: 1,
-        ],
-        A_grad=[
-            lambda theta: 0,
-            lambda theta: 0,
-        ],
-        H_grad=[
-            lambda theta: 0,
-            lambda theta: 0,
-        ],
-        F_grad=[
-            lambda theta: 1,
-            lambda theta: 0,
-        ],
-        Gamma_grad=[
-            lambda theta: 0,
-            lambda theta: 0,
-        ],
-        mu_x_grad=[
-            lambda theta: 0,
-            lambda theta: 0,
-        ],
-        P_tk_tk_grad=[
-            lambda theta: 0,
-            lambda theta: 0,
-        ],
-    )
-
-    em = ExperimentConstants(
-        P_t0=0.1,
-        theta_0=[0.1, 0.1],
-        theta_true=[1, 1],
-        R=0.3,
-        Q=0.1,
-        m=1,
-        N=2,
-        a=0,
-        s=2,
-    )
-
-    injector.Injector.setParams(ec, em).configure()
-
-    y = GeneratorFactory.get(1).generate()
-
-    #
-    # imf_calc(a1, m1)
+    imf_calc()
 
     #
     # a2 = ExperimentConstants(P_t0=[[0.05, 0], [0, 0.05]],
@@ -81,7 +27,8 @@ def main():
 
     # y = GeneratorFactory.get(2, a2).generate()
 
-    print(y)
+
+#
 
 
 if __name__ == '__main__':

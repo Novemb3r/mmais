@@ -1,11 +1,16 @@
 class ExperimentModel:
 
     def __init__(self, Psi=None, F=None, H=None, A=None, Gamma=None, Psi_grad=None, H_grad=None, F_grad=None,
-                 A_grad=None, Gamma_grad=None, mu_x=None, mu_x_grad=None, P_tk_tk=None, P_tk_tk_grad=None):
+                 A_grad=None, Gamma_grad=None, mu_x=None, mu_x_grad=None, P_tk_tk=None, P_tk_tk_grad=None, Q=None,
+                 Q_grad=None, R=None, R_grad=None):
         self.Psi = Psi
         self.H = H
         self.F = F
         self.A = A
+        self.Q = Q
+        self.Q_grad_mas = Q_grad
+        self.R = R
+        self.R_grad_mas = R_grad
         self.Gamma = Gamma
         self.Psi_grad_mas = Psi_grad
         self.H_grad_mas = H_grad
@@ -28,6 +33,12 @@ class ExperimentModel:
 
     def A(self, theta):
         return self.A(theta)
+
+    def Q(self, theta):
+        return self.Q(theta)
+
+    def R(self, theta):
+        return self.R(theta)
 
     def Gamma(self, theta):
         return self.Gamma(theta)
@@ -58,3 +69,9 @@ class ExperimentModel:
 
     def P_tk_tk_grad(self, theta, ind):
         return self.P_tk_tk_grad_mas[ind](theta)
+
+    def Q_grad(self, theta, ind):
+        return self.Q_grad_mas[ind](theta)
+
+    def R_grad(self, theta, ind):
+        return self.R_grad_mas[ind](theta)

@@ -1,8 +1,8 @@
 import inject
 import numpy as np
 
-from lab4.ExperimentConstants import ExperimentConstants
-from lab4.model.ExperimentModel import ExperimentModel
+from lab4.Experiment.ExperimentConstants import ExperimentConstants
+from lab4.Experiment.ExperimentModel import ExperimentModel
 
 
 class NGenerator:
