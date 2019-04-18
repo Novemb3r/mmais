@@ -1,3 +1,5 @@
+import injector
+
 from lab4.generator import GeneratorFactory
 from lab4.ExperimentConstants import ExperimentConstants
 from lab4.model.ExperimentModel import ExperimentModel
@@ -5,19 +7,9 @@ from lab4.solver.imf_calc import imf_calc
 
 
 def main():
-    a1 = ExperimentConstants(
-        P_t0=0.1,
-        theta_0=[0.1, 0.1],
-        theta_true=[1, 1],
-        R=0.3,
-        Q=0.1,
-        m=1,
-        N=2,
-        a=0,
-        s=2,
-    )
 
-    m1 = ExperimentModel(
+
+    ec = ExperimentModel(
         Psi=lambda theta: theta[1],
         A=lambda theta: 0,
         H=lambda theta: 1,
@@ -56,7 +48,24 @@ def main():
         ],
     )
 
-    imf_calc(a1, m1)
+    em = ExperimentConstants(
+        P_t0=0.1,
+        theta_0=[0.1, 0.1],
+        theta_true=[1, 1],
+        R=0.3,
+        Q=0.1,
+        m=1,
+        N=2,
+        a=0,
+        s=2,
+    )
+
+    injector.Injector.setParams(ec, em).configure()
+
+    y = GeneratorFactory.get(1).generate()
+
+    #
+    # imf_calc(a1, m1)
 
     #
     # a2 = ExperimentConstants(P_t0=[[0.05, 0], [0, 0.05]],
@@ -69,12 +78,10 @@ def main():
     #                          N=10,
     #                          )
     #
-    y = GeneratorFactory.get(1, m1, a1).generate()
 
     # y = GeneratorFactory.get(2, a2).generate()
 
     print(y)
-
 
 
 if __name__ == '__main__':

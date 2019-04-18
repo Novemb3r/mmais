@@ -1,14 +1,18 @@
+import inject
 import numpy as np
+
+from lab4.ExperimentConstants import ExperimentConstants
+from lab4.model.ExperimentModel import ExperimentModel
 
 
 class NGenerator:
 
-    def __init__(self, em, ec):
-        self.em = em
-        self.ec = ec
+    def __init__(self):
+        self.ec = inject.instance(ExperimentConstants)
+        self.em = inject.instance(ExperimentModel)
 
     def generate(self):
-        x_0 = np.random.multivariate_normal(self.ec.mu_x, self.ec.P_t0).T
+        x_0 = np.random.multivariate_normal(self.em.mu_x(0), self.ec.P_t0).T
         x = [x_0]
         for i in range(self.ec.N):
             w = np.random.multivariate_normal([0 for i in range(self.ec.m)], self.ec.Q).T

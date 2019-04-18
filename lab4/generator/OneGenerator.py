@@ -1,14 +1,18 @@
+import inject
 import numpy as np
+
+from lab4.ExperimentConstants import ExperimentConstants
+from lab4.model.ExperimentModel import ExperimentModel
 
 
 class OneGenerator:
 
-    def __init__(self, em, ec):
-        self.ec = ec
-        self.em = em
+    def __init__(self):
+        self.ec = inject.instance(ExperimentConstants)
+        self.em = inject.instance(ExperimentModel)
 
     def generate(self):
-        x_0 = np.random.normal(self.ec.mu_x, self.ec.P_t0)
+        x_0 = np.random.normal(self.em.mu_x(0), self.ec.P_t0)
         x = [x_0]
         for i in range(self.ec.N):
             w = float(np.random.normal([0 for i in range(self.ec.m)], self.ec.Q))
@@ -18,6 +22,6 @@ class OneGenerator:
         y = []
         for i in range(self.ec.N):
             v = float(np.random.normal([0 for i in range(self.ec.m)], self.ec.R))
-            y_t = self.em.A() + self.em.H() * x[1:][i] + v
+            y_t = self.em.A(0) + self.em.H(0) * x[1:][i] + v
             y.append(y_t)
         return y

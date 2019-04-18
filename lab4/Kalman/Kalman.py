@@ -1,4 +1,5 @@
 import numpy as np
+import inject
 
 from lab4.ExperimentConstants import ExperimentConstants
 from lab4.Helpers import Helpers
@@ -7,9 +8,9 @@ from lab4.model.ExperimentModel import ExperimentModel
 
 class Kalman:
 
-    def __init__(self, const: ExperimentConstants, model: ExperimentModel):
-        self.model = model
-        self.const = const
+    def __init__(self):
+        self.const = inject.instance(ExperimentConstants)
+        self.model = inject.instance(ExperimentModel)
 
     def P_tk1_tk(self, theta):
         return np.dot(np.dot(self.model.F(theta), self.model.P_tk_tk(theta)), self.model.F(theta).T) + \
@@ -26,4 +27,4 @@ class Kalman:
 
     def P_tk1_tk_grad(self, theta, i):
         return np.dot(np.dot(self.model.F_grad(theta, i), self.P_tk_tk(theta)), self.model.F(theta).T) + \
-               np.dot(self.model.F(theta), Helpers.gradient()
+               np.dot(self.model.F(theta), 
