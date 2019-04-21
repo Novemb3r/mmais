@@ -21,14 +21,11 @@ class Kalman:
     def K(self, theta):
         return np.dot(np.dot(self.P_tk1_tk(theta), T(self.model.H(theta))), inv(self.B(theta)))
 
-    def P_tk_tk(self, theta):
+    def P_tk1_tk1(self, theta):
         return np.dot(np.eye(self.const.m) - np.dot(self.K(theta), self.model.H(theta)), self.P_tk1_tk(theta))
 
-    def P_tk1_tk1(self, theta):
-        return np.dot((np.eye(self.const.m) - np.dot(self.K(theta), self.model.H(theta))), self.P_tk1_tk(theta))
-
     def P_tk1_tk_grad(self, theta, i):
-        return np.dot(np.dot(self.model.F_grad(theta, i), self.P_tk_tk(theta)), T(self.model.F(theta))) + \
+        return np.dot(np.dot(self.model.F_grad(theta, i), self.model.P_tk_tk(theta)), T(self.model.F(theta))) + \
                np.dot(np.dot(self.model.F(theta), self.model.P_tk_tk_grad(theta, i)), T(self.model.F(theta))) + \
                np.dot(np.dot(self.model.F(theta), self.model.P_tk_tk(theta)), self.model.F_grad(theta, i)) + \
                np.dot(np.dot(self.model.Gamma_grad(theta, i), self.model.Q(theta)), T(self.model.Gamma(theta))) + \

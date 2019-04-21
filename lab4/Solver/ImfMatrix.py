@@ -22,25 +22,31 @@ class ImfMatrix:
                  self.model.F(self.const.theta_0) - np.dot(self.kalman.K_hat(self.const.theta_0),
                                                            self.model.H(self.const.theta_0))] + [
                  np.zeros((self.const.m, self.const.m))] * (self.const.s - i - 1) for i in range(0, self.const.s)]
-
         for i in range(self.const.m):
-            a = np.vstack(a)
+            a = np.hstack(a)
 
         result = a.reshape((self.const.m * (self.const.s + 1), self.const.m * (self.const.s + 1)))
-
         return result
 
     def a_A_tk(self):
         # @TODO общий случай
-        return np.zeros(self.const.s + 1)
+        return [self.const.a] + [
+            self.a_gr(1)[i] - np.dot(self.kalman.K_hat(self.const.theta_0), self.model.A_grad(self.const.theta_0, i))
+            for i
+            in range(self.const.s)]
 
     def C(self, i):
-        return np.reshape([np.zeros((self.const.m, self.const.m)) for _ in range(i)] + [np.eye(self.const.m)] + [
-            np.zeros((self.const.m, self.const.m)) for _ in range(self.const.s - i)], (1, 3))
+        return np.reshape([np.zeros((self.const.m, self.const.m)) for _ in range(i + 1)] + [np.eye(self.const.m)] + [
+            np.zeros((self.const.m, self.const.m)) for _ in range(self.const.s - i - 1)],
+                          (self.const.m, self.const.s + 1))
 
     def K_A_tk(self):
-        return [self.kalman.K_hat(self.const.theta_0)] + [self.kalman.K_hat_grad(self.const.theta_0, i) for i in
-                                                          range(self.const.s)]
+        return np.reshape(
+            [self.kalman.K_hat(self.const.theta_0)] + [self.kalman.K_hat_grad(self.const.theta_0, i) for i in
+                                                       range(self.const.s)], (self.const.s + 1, self.const.m))
+
+    def a_gr(self, k):
+        return [self.model.Psi_grad(self.const.theta_0, i) * self.const.U[k] for i in range(self.const.s)]
 
     def imf_calc(self):
         theta = self.const.theta_0
@@ -48,29 +54,22 @@ class ImfMatrix:
         M = np.zeros((self.const.s, self.const.s))
         for k in range(self.const.N):
             print(f"WE SURVIVED {k} ITERATIONS")
+
+            self.const.a = np.dot(self.model.Psi(theta), self.const.U[k])
+            a_gr = self.a_gr(k)
+
             if k == 0:
                 x_A_tk1 = np.reshape([np.dot(self.model.F(theta), self.model.mu_x(theta)) + self.const.a] + \
                                      [np.dot(self.model.F_grad(theta, i), self.model.mu_x(theta)) +
-                                      np.dot(self.model.F(theta), self.model.mu_x_grad(theta, i))
+                                      np.dot(self.model.F(theta), self.model.mu_x_grad(theta, i)) +
+                                      a_gr[i]
                                       for i in range(self.const.s)], (3, 1))
 
                 # возможно s
                 sigma_A_tk1 = np.zeros((self.const.s + 1, self.const.s + 1))
-                print("SIGMA:")
-                print(sigma_A_tk1)
-            else:
-
-                sigma_A_tk1 = combo_dot(self.F_A_tk(), sigma_A_tk1, T(self.F_A_tk())) + combo_dot(self.K_A_tk(),
-                                                                                                  self.kalman.B(theta),
-                                                                                                  T(self.K_A_tk()))
-                print("SIGMA:")
-                print(sigma_A_tk1)
 
             E_x_hat = x_A_tk1
             E_x_hat_x_hat_t = sigma_A_tk1 + np.dot(x_A_tk1, T(x_A_tk1))
-
-            print(E_x_hat)
-            print(E_x_hat_x_hat_t)
 
             for i in range(self.const.s):
                 for j in range(self.const.s):
@@ -97,5 +96,19 @@ class ImfMatrix:
                                    inv(self.kalman.B(theta))) + \
                                0.5 * TCD(self.kalman.B_tk1_grad(theta, i), inv(self.kalman.B(theta)),
                                          self.kalman.B_tk1_grad(theta, j), inv(self.kalman.B(theta)))
+
+            if k != self.const.N - 1:
+                x_A_tk1 = np.reshape((T(np.dot(self.F_A_tk(), x_A_tk1)) + self.a_A_tk()),
+                                     (self.const.s + 1, self.const.m))
+
+                sigma_A_tk1 = combo_dot(self.F_A_tk(), sigma_A_tk1, T(self.F_A_tk())) + combo_dot(self.K_A_tk(),
+                                                                                                  self.kalman.B(theta),
+                                                                                                  T(self.K_A_tk()))
+
+                a = np.hstack(self.kalman.P_tk1_tk1(theta))[0]
+                b = np.hstack([self.kalman.P_tk1_tk1_grad(theta, i) for i in range(self.const.s)])[0]
+
+                self.kalman.model.P_tk_tk = lambda theta: a
+                self.kalman.model.P_tk_tk_grad = lambda theta, i: b[i]
 
         print(M)

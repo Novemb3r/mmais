@@ -25,9 +25,7 @@ def trace(arg):
 def combo_dot(*args):
     acc = args[0]
 
-    print("asdnaskjdlas")
     for i in args[1:]:
-        print(f"acc: {acc} i: {i}")
         acc = np.dot(acc, i)
 
     return acc

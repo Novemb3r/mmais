@@ -58,7 +58,7 @@ class Experiment:
         theta_true=[1, 1],
         m=1,
         N=2,
-        a=0,
+        a=2,
         s=2,
     )
 
