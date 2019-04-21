@@ -111,4 +111,4 @@ class ImfMatrix:
                 self.kalman.model.P_tk_tk = lambda theta: a
                 self.kalman.model.P_tk_tk_grad = lambda theta, i: b[i]
 
-        print(M)
+        return M
