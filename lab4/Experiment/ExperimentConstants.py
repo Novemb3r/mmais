@@ -13,7 +13,7 @@ class ExperimentConstants:
         self.theta_0 = theta_0
         self.theta_true = theta_true
         self.U = [2 for _ in range(N)]
-        self.m = m  # количество параметров
+        self.m = m  # размерность
         self.N = N
         self.a = a
-        self.s = s
+        self.s = s  # количество theta

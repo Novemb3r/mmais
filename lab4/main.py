@@ -1,7 +1,7 @@
 from lab4.Experiment.Experiment import Experiment
 from lab4.Generator import GeneratorFactory
 from lab4.Injector import Injector
-from lab4.Solver.imf_calc import imf_calc
+from lab4.Solver.ImfMatrix import ImfMatrix
 
 
 def main():
@@ -11,7 +11,9 @@ def main():
 
     # y = GeneratorFactory.get(1).generate()
 
-    imf_calc()
+    IMF = ImfMatrix()
+
+    IMF.imf_calc()
 
     #
     # a2 = ExperimentConstants(P_t0=[[0.05, 0], [0, 0.05]],

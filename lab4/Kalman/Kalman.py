@@ -19,7 +19,6 @@ class Kalman:
         return np.dot(np.dot(self.model.H(theta), self.P_tk1_tk(theta)), T(self.model.H(theta))) + self.model.R(theta)
 
     def K(self, theta):
-        print(self.B(theta))
         return np.dot(np.dot(self.P_tk1_tk(theta), T(self.model.H(theta))), inv(self.B(theta)))
 
     def P_tk_tk(self, theta):
