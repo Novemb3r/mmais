@@ -38,7 +38,7 @@ class ImfMatrix:
     def C(self, i):
         return np.reshape([np.zeros((self.const.m, self.const.m)) for _ in range(i + 1)] + [np.eye(self.const.m)] + [
             np.zeros((self.const.m, self.const.m)) for _ in range(self.const.s - i - 1)],
-                          (self.const.m, self.const.s + 1))
+                          (self.const.m, self.const.m * (self.const.s + 1)))
 
     def K_A_tk(self):
         return np.reshape(
@@ -46,7 +46,7 @@ class ImfMatrix:
                                                        range(self.const.s)], (self.const.s + 1, self.const.m))
 
     def a_gr(self, k):
-        return [self.model.Psi_grad(self.const.theta_0, i) * self.const.U[k] for i in range(self.const.s)]
+        return [np.dot(self.model.Psi_grad(self.const.theta_0, i), self.const.U[k]) for i in range(self.const.s)]
 
     def imf_calc(self):
         theta = self.const.theta_0
@@ -63,14 +63,12 @@ class ImfMatrix:
                                      [np.dot(self.model.F_grad(theta, i), self.model.mu_x(theta)) +
                                       np.dot(self.model.F(theta), self.model.mu_x_grad(theta, i)) +
                                       a_gr[i]
-                                      for i in range(self.const.s)], (3, 1))
+                                      for i in range(self.const.s)], (self.const.s + 1, self.const.m))
 
-                # возможно s
                 sigma_A_tk1 = np.zeros((self.const.s + 1, self.const.s + 1))
 
             E_x_hat = x_A_tk1
             E_x_hat_x_hat_t = sigma_A_tk1 + np.dot(x_A_tk1, T(x_A_tk1))
-
             for i in range(self.const.s):
                 for j in range(self.const.s):
                     M[i][j] += TCD(self.model.H_grad(theta, i), self.C(0), E_x_hat_x_hat_t, T(self.C(0)),
