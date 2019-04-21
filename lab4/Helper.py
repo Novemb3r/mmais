@@ -5,7 +5,7 @@ def T(arg):
     if type(arg).__module__ == np.__name__:
         return arg.T
 
-    return arg
+    return np.array(arg).T
 
 
 def inv(arg):
@@ -13,3 +13,25 @@ def inv(arg):
         return np.linalg.inv(arg)
 
     return 1.0 / arg
+
+
+def trace(arg):
+    if type(arg).__module__ == np.__name__ and arg.shape != ():
+        return np.trace(arg)
+
+    return arg
+
+
+def combo_dot(*args):
+    acc = args[0]
+
+    print("asdnaskjdlas")
+    for i in args[1:]:
+        print(f"acc: {acc} i: {i}")
+        acc = np.dot(acc, i)
+
+    return acc
+
+
+def TCD(*args):
+    return trace(combo_dot(*args))

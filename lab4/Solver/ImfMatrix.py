@@ -2,6 +2,7 @@ import inject
 
 from lab4.Experiment.ExperimentModel import ExperimentModel
 from lab4.Experiment.ExperimentConstants import ExperimentConstants
+from lab4.Helper import T, inv, combo_dot, TCD
 from lab4.Kalman.Kalman import Kalman
 import numpy as np
 
@@ -14,7 +15,6 @@ class ImfMatrix:
         self.kalman = inject.instance(Kalman)
 
     def F_A_tk(self):
-
         a = [[self.model.F(self.const.theta_0)] + [np.zeros((self.const.m, self.const.m))] * self.const.s] + \
             [[self.model.F_grad(self.const.theta_0, i) - np.dot(self.kalman.K_hat(self.const.theta_0),
                                                                 self.model.H_grad(self.const.theta_0, i))] + [
@@ -23,46 +23,79 @@ class ImfMatrix:
                                                            self.model.H(self.const.theta_0))] + [
                  np.zeros((self.const.m, self.const.m))] * (self.const.s - i - 1) for i in range(0, self.const.s)]
 
-        print(a)
         for i in range(self.const.m):
             a = np.vstack(a)
-
-        print(a)
 
         result = a.reshape((self.const.m * (self.const.s + 1), self.const.m * (self.const.s + 1)))
 
         return result
 
+    def a_A_tk(self):
+        # @TODO общий случай
+        return np.zeros(self.const.s + 1)
+
+    def C(self, i):
+        return np.reshape([np.zeros((self.const.m, self.const.m)) for _ in range(i)] + [np.eye(self.const.m)] + [
+            np.zeros((self.const.m, self.const.m)) for _ in range(self.const.s - i)], (1, 3))
+
+    def K_A_tk(self):
+        return [self.kalman.K_hat(self.const.theta_0)] + [self.kalman.K_hat_grad(self.const.theta_0, i) for i in
+                                                          range(self.const.s)]
+
     def imf_calc(self):
-        M = 0
+        theta = self.const.theta_0
 
+        M = np.zeros((self.const.s, self.const.s))
         for k in range(self.const.N):
+            print(f"WE SURVIVED {k} ITERATIONS")
             if k == 0:
-                x_A_tk1 = np.array(
-                    [np.dot(self.model.F(self.const.theta_0), self.model.mu_x(self.const.theta_0)) + self.const.a] +
-                    [np.dot(self.model.F_grad(self.const.theta_0, i), self.model.mu_x(self.const.theta_0)) +
-                     np.dot(self.model.F(self.const.theta_0), self.model.mu_x_grad(self.const.theta_0, i))
-                     for i in range(self.const.s)]).T
-                sigma_A_tk1 = np.zeros((self.const.s, self.const.s))
+                x_A_tk1 = np.reshape([np.dot(self.model.F(theta), self.model.mu_x(theta)) + self.const.a] + \
+                                     [np.dot(self.model.F_grad(theta, i), self.model.mu_x(theta)) +
+                                      np.dot(self.model.F(theta), self.model.mu_x_grad(theta, i))
+                                      for i in range(self.const.s)], (3, 1))
 
+                # возможно s
+                sigma_A_tk1 = np.zeros((self.const.s + 1, self.const.s + 1))
+                print("SIGMA:")
+                print(sigma_A_tk1)
             else:
 
-                # для многомерного случая
-                # F_A_tk = [model.F(const.theta_0) + [np.zeros((const.m, const.m))] * const.s] + \
-                #          [(model.F_grad(const.theta_0, i) - np.dot(kalman.K_hat_grad(const.theta_0, i),
-                #                                                    model.H_grad(const.theta_0, i))) + [
-                #               np.zeros((const.m, const.m))] * i + (
-                #                   model.F(const.theta_0) - np.dot(kalman.K_hat(const.theta_0),
-                #                                                   model.H(const.theta_0))) + np.zeros(
-                #              (const.m, const.m)) * (const.s - i - 1) for i in range(const.s)]
+                sigma_A_tk1 = combo_dot(self.F_A_tk(), sigma_A_tk1, T(self.F_A_tk())) + combo_dot(self.K_A_tk(),
+                                                                                                  self.kalman.B(theta),
+                                                                                                  T(self.K_A_tk()))
+                print("SIGMA:")
+                print(sigma_A_tk1)
 
-                self.F_A_tk()
-            # x_A_tk1 = np.dot(F_A_tk, x_mu_A_tk) + a_A_tk
-            # sigma_A_tk1 = np.dot(np.dot(F_A_tk, sigma_A_tk1), F_A_tk.T) + np.dot(np.dot(K_A_tk, B_tk), K_A_tk.T)
-            #
-            # F_A_tk = np.hstack(([model.F] + [[np.zeros((const.s, const.s))] * const.s]) +
-            #
-            #                    [[model.F_grad(i) - K_w_tk @ model.H_grad(i)] + [model.F - K_w_tk @ model.H] +
-            #                     [np.zeros((const.s, const.s))] * i +
-            #                     [model.F - K_w_tk @ H_tk] + [np.zeros((const.s, const.s))] * (const.s - i)
-            #                     for i in range(const.s)])
+            E_x_hat = x_A_tk1
+            E_x_hat_x_hat_t = sigma_A_tk1 + np.dot(x_A_tk1, T(x_A_tk1))
+
+            print(E_x_hat)
+            print(E_x_hat_x_hat_t)
+
+            for i in range(self.const.s):
+                for j in range(self.const.s):
+                    M[i][j] += TCD(self.model.H_grad(theta, i), self.C(0), E_x_hat_x_hat_t, T(self.C(0)),
+                                   T(self.model.H_grad(theta, j)), inv(self.kalman.B(theta))) + \
+                               TCD(self.model.H_grad(theta, i), self.C(0), E_x_hat_x_hat_t, T(self.C(j)),
+                                   T(self.model.H(theta)), inv(self.kalman.B(theta))) + \
+                               TCD(self.model.H_grad(theta, i), self.C(0), E_x_hat, T(self.model.A_grad(theta, j)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.H(theta), self.C(i), E_x_hat_x_hat_t, T(self.C(0)),
+                                   T(self.model.H_grad(theta, j)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.H(theta), self.C(i), E_x_hat_x_hat_t, T(self.C(j)),
+                                   T(self.model.H(theta)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.H(theta), self.C(i), E_x_hat, T(self.model.A_grad(theta, j)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.A_grad(theta, i), T(E_x_hat), T(self.C(0)),
+                                   T(self.model.H_grad(theta, i)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.A_grad(theta, i), T(E_x_hat), T(self.C(j)), T(self.model.H(theta)),
+                                   inv(self.kalman.B(theta))) + \
+                               TCD(self.model.A_grad(theta, i), T(self.model.A_grad(theta, j)),
+                                   inv(self.kalman.B(theta))) + \
+                               0.5 * TCD(self.kalman.B_tk1_grad(theta, i), inv(self.kalman.B(theta)),
+                                         self.kalman.B_tk1_grad(theta, j), inv(self.kalman.B(theta)))
+
+        print(M)

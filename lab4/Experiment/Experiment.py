@@ -54,7 +54,7 @@ class Experiment:
 
     em = ExperimentConstants(
         P_t0=0.1,
-        theta_0=[0.1, 0.1],
+        theta_0=[1, 1],
         theta_true=[1, 1],
         m=1,
         N=2,
