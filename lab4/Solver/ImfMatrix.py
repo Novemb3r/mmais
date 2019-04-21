@@ -63,7 +63,7 @@ class ImfMatrix:
                                      [np.dot(self.model.F_grad(theta, i), self.model.mu_x(theta)) +
                                       np.dot(self.model.F(theta), self.model.mu_x_grad(theta, i)) +
                                       a_gr[i]
-                                      for i in range(self.const.s)], (3, 1))
+                                      for i in range(self.const.s)], (4, 2))
 
                 # возможно s
                 sigma_A_tk1 = np.zeros((self.const.s + 1, self.const.s + 1))
