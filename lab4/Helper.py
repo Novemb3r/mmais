@@ -9,8 +9,14 @@ def T(arg):
 
 
 def inv(arg):
+
     if type(arg).__module__ == np.__name__ and arg.shape != ():
         return np.linalg.inv(arg)
+
+    if isinstance(arg, list):
+        arg = np.array(arg)
+        if arg.ndim != 1:
+            return inv(arg)
 
     return 1.0 / arg
 
@@ -18,6 +24,11 @@ def inv(arg):
 def trace(arg):
     if type(arg).__module__ == np.__name__ and arg.shape != ():
         return np.trace(arg)
+
+    if isinstance(arg, list):
+        arg = np.array(arg)
+        if arg.ndim != 1:
+            return trace(arg)
 
     return arg
 

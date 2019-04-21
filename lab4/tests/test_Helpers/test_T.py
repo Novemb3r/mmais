@@ -1,14 +1,10 @@
+from lab4.tests.test_Helpers.fixtures import *
 import numpy as np
-import pytest
 
 from lab4.Helper import T
 
-a = [[0, 1], [2, 3]]
-a_t = [[0, 2], [1, 3]]
 
-b = [[3, 4], [5, 6]]
-c = [[7, 8], [9, 10]]
-d = [[11, 12], [13, 14]]
+# ===============================================
 
 
 def test_T_1():
@@ -25,3 +21,9 @@ def test_T_3():
 
 def test_T_4():
     assert np.array_equal(T(a), a_t)
+
+
+def test_T_5():
+    assert np.array_equal(T(npa), npa_t)
+
+# ===============================================
