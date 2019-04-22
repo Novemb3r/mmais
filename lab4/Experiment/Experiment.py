@@ -63,11 +63,11 @@ class Experiment:
     # )
 
     ec = ExperimentModel(
-         Psi=lambda theta: theta[1],
+         Psi=lambda theta: 0,#theta[1],
          A=lambda theta: 0,
          H=lambda theta: 1,
-         Q=lambda theta: 0.1,
-         R=lambda theta: 0.3,
+         Q=lambda theta: theta[0],
+         R=lambda theta: theta[1],
          mu_x=lambda theta: 0,
          F=lambda theta: theta[0],
          Gamma=lambda theta: 1,
@@ -75,14 +75,14 @@ class Experiment:
 
          Psi_grad=[
              lambda theta: 0,
-             lambda theta: 1,
+             lambda theta: 0,
          ],
          R_grad=[
              lambda theta: 0,
-             lambda theta: 0,
+             lambda theta: 1,
          ],
          Q_grad=[
-             lambda theta: 0,
+             lambda theta: 1,
              lambda theta: 0,
          ],
          A_grad=[

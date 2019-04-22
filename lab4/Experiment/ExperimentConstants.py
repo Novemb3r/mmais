@@ -12,7 +12,7 @@ class ExperimentConstants:
         self.P_t0 = P_t0
         self.theta_0 = theta_0
         self.theta_true = theta_true
-        self.U = [2 for _ in range(N)]
+        self.U = [10 for _ in range(N)]
         self.m = m  # размерность
         self.N = N
         self.a = a
