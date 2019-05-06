@@ -1,0 +1,27 @@
+import inject
+import numpy as np
+
+from lab5.Experiment.Experiment import ExperimentConstants
+from lab5.Experiment.Experiment import ExperimentModel
+
+
+class OneGenerator:
+
+    def __init__(self):
+        self.ec = inject.instance(ExperimentConstants)
+        self.em = inject.instance(ExperimentModel)
+
+    def generate(self):
+        x_0 = np.random.normal(self.em.mu_x(0), self.ec.P_t0)
+        x = [x_0]
+        for i in range(self.ec.N):
+            w = float(np.random.normal([0 for i in range(self.ec.m)], self.em.Q(0)))
+            x_t = self.em.F(self.ec.theta_true) * x[i] + self.em.Psi(self.ec.theta_true) * self.ec.U[i] + w
+            x.append(x_t)
+
+        y = []
+        for i in range(self.ec.N):
+            v = float(np.random.normal([0 for i in range(self.ec.m)], self.em.R(0)))
+            y_t = self.em.A(0) + self.em.H(0) * x[1:][i] + v
+            y.append(y_t)
+        return y
